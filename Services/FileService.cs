@@ -9,11 +9,11 @@ public class FileService : IFileService
 {
     private ILogger<IFileService> _logger;
     private string _fileName;
-
-    // these should not be here
-    private List<int> _movieIds;
-    private List<string> _movieTitles;
-    private List<string> _movieGenres;
+    
+    
+    public List<int> MovieIds { get; set; }
+    public List<string> MovieTitles{ get; set; }
+    public List<string> MovieGenres{ get; set; }
 
     #region constructors
     
@@ -41,9 +41,9 @@ public class FileService : IFileService
 
         _fileName = $"{Environment.CurrentDirectory}/movies.csv";
 
-        _movieIds = new List<int>();
-        _movieTitles = new List<string>();
-        _movieGenres = new List<string>();
+        MovieIds = new List<int>();
+        MovieTitles = new List<string>();
+        MovieGenres = new List<string>();
     }
 
     public void Read()
@@ -55,22 +55,25 @@ public class FileService : IFileService
             while (!sr.EndOfStream)
             {
                 string line = sr.ReadLine();
-                int idx = line.IndexOf('"');
-                if (idx == -1)
+                if (line != null)
                 {
-                    string[] movieDetails = line.Split(',');
-                    _movieIds.Add(int.Parse(movieDetails[0]));
-                    _movieTitles.Add(movieDetails[1]);
-                    _movieGenres.Add(movieDetails[2].Replace("|", ", "));
-                }
-                else
-                {
-                    _movieIds.Add(int.Parse(line.Substring(0, idx - 1)));
-                    line = line.Substring(idx + 1);
-                    idx = line.IndexOf('"');
-                    _movieTitles.Add(line.Substring(0, idx));
-                    line = line.Substring(idx + 2);
-                    _movieGenres.Add(line.Replace("|", ", "));
+                    int idx = line.IndexOf('"');
+                    if (idx == -1)
+                    {
+                        string[] movieDetails = line.Split(',');
+                        MovieIds.Add(int.Parse(movieDetails[0]));
+                        MovieTitles.Add(movieDetails[1]);
+                        MovieGenres.Add(movieDetails[2].Replace("|", ", "));
+                    }
+                    else
+                    {
+                        MovieIds.Add(int.Parse(line.Substring(0, idx - 1)));
+                        line = line.Substring(idx + 1);
+                        idx = line.IndexOf('"');
+                        MovieTitles.Add(line.Substring(0, idx));
+                        line = line.Substring(idx + 2);
+                        MovieGenres.Add(line.Replace("|", ", "));
+                    }
                 }
             }
             sr.Close();
@@ -89,15 +92,15 @@ public class FileService : IFileService
         string genresString = null;
         string genre;
         string movieTitle = Console.ReadLine();
-        List<string> lowerCaseMovieTitles = _movieTitles.ConvertAll(t => t.ToLower());
-        if (lowerCaseMovieTitles.Contains(movieTitle.ToLower()))
+        List<string> lowerCaseMovieTitles = MovieTitles.ConvertAll(t => t.ToLower());
+        if (lowerCaseMovieTitles.Contains(movieTitle?.ToLower()))
         {
             Console.WriteLine("That movie has already been entered");
             _logger.LogInformation("Duplicate movie title {Title}", movieTitle);
         }
         else
         {
-            movieId = _movieIds.Max() + 1;
+            movieId = MovieIds.Max() + 1;
             List<string> genres = new List<string>();
             do
             {
@@ -119,20 +122,20 @@ public class FileService : IFileService
         sw.WriteLine($"{movieId},{movieTitle},{genresString}");
         sw.Close();
             
-        _movieIds.Add(movieId);
-        _movieTitles.Add(movieTitle);
-        _movieGenres.Add(genresString);
+        MovieIds.Add(movieId);
+        MovieTitles.Add(movieTitle);
+        MovieGenres.Add(genresString);
         _logger.LogInformation("Movie id {Id} added", movieId);
 
         }
     public void Display()
     {
         _logger.LogInformation("Displaying all movies");
-        for (int i = 0; i < _movieIds.Count; i++)
+        for (int i = 0; i < MovieIds.Count; i++)
         {
-            Console.WriteLine($"Id: {_movieIds[i]}");
-            Console.WriteLine($"Title: {_movieTitles[i]}");
-            Console.WriteLine($"Genre(s): {_movieGenres[i]}");
+            Console.WriteLine($"Id: {MovieIds[i]}");
+            Console.WriteLine($"Title: {MovieTitles[i]}");
+            Console.WriteLine($"Genre(s): {MovieGenres[i]}");
             Console.WriteLine();
         }
         _logger.LogInformation("All movies displayed");
